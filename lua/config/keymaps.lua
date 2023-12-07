@@ -14,6 +14,11 @@ keymap.set("n", "-", "<C-x>")
 -- Delete a word backwards
 keymap.set("n", "dw", 'vb"_d')
 
+vim.keymap.set("n", "<leader>t", function()
+  vim.cmd("cd %:p:h")
+  vim.cmd("terminal")
+end, { noremap = true, desc = "Open terminal in current file directory" })
+
 -- Select all
 keymap.set("n", "<C-a>", "gg<S-v>G")
 
