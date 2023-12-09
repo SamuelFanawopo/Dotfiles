@@ -14,10 +14,27 @@ keymap.set("n", "-", "<C-x>")
 -- Delete a word backwards
 keymap.set("n", "dw", 'vb"_d')
 
-vim.keymap.set("n", "<leader>t", function()
+--[[ vim.keymap.set("n", "<leader>t", function()
   vim.cmd("cd %:p:h")
   vim.cmd("terminal")
 end, { noremap = true, desc = "Open terminal in current file directory" })
+]]
+
+local terminal_buffer = nil
+
+vim.keymap.set("n", "<leader>t", function()
+  if terminal_buffer ~= nil and vim.fn.bufexists(terminal_buffer) == 1 then
+    if vim.fn.bufwinnr(terminal_buffer) ~= -1 then
+      vim.cmd("hide")
+    else
+      vim.cmd("botright sbuffer " .. terminal_buffer)
+    end
+  else
+    vim.cmd("cd %:p:h") -- Change directory to the current file's directory
+    vim.cmd("botright split | terminal")
+    terminal_buffer = vim.fn.bufnr("%")
+  end
+end, { noremap = true, desc = "Toggle terminal in a split in the current file directory" })
 
 -- Select all
 keymap.set("n", "<C-a>", "gg<S-v>G")
