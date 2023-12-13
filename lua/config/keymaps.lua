@@ -20,7 +20,18 @@ keymap.set("n", "dw", 'vb"_d')
 end, { noremap = true, desc = "Open terminal in current file directory" })
 ]]
 
-local terminal_buffer = nil
+local copilot_enabled = true
+
+function ToggleCopilot()
+  copilot_enabled = not copilot_enabled
+  if copilot_enabled then
+    vim.cmd([[Copilot enable]])
+  else
+    vim.cmd([[Copilot disable]])
+  end
+end
+
+vim.api.nvim_set_keymap("n", "<leader>cp", "<cmd>lua ToggleCopilot()<CR>", { noremap = true, silent = true })
 
 vim.keymap.set("n", "<leader>t", function()
   if terminal_buffer ~= nil and vim.fn.bufexists(terminal_buffer) == 1 then
