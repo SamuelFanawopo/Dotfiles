@@ -11,6 +11,13 @@ keymap.set("n", "x", '"_x')
 keymap.set("n", "+", "<C-a>")
 keymap.set("n", "-", "<C-x>")
 
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>cv",
+  '<cmd>lua vim.diagnostic.open_float(nil, { focusable = false, scope = "line" })<CR>',
+  { noremap = true, silent = true }
+)
+
 -- Delete a word backwards
 keymap.set("n", "dw", 'vb"_d')
 
