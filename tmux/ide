@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Exit if not running in tmux
+if [ -z "$TMUX" ]; then
+    echo "This script should be run inside a tmux session."
+    exit 1
+fi
+
+# Split the window into two panes with the bottom pane being 30% of the height
+tmux split-window -v -p 30
+
+# Select the bottom pane to perform further splits
+tmux select-pane -t 1
+
+# Split the bottom pane into two columns, left column being 66% of the width
+tmux split-window -h -p 66
+
+# Split the right column of the bottom pane in half vertically
+tmux split-window -h -p 50
