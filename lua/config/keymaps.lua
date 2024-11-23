@@ -1,87 +1,73 @@
--- Keymaps are automatically loaded on the VeryLazy event
--- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
--- Add any additional keymaps here
-
 local keymap = vim.keymap
 local opts = { noremap = true, silent = true }
 
-keymap.set("n", "x", '"_x')
+-- General Keymaps
+keymap.set("n", "<leader>sv", ":source $MYVIMRC<CR>", opts) -- Reload config
 
--- Increment/decrement
-keymap.set("n", "+", "<C-a>")
-keymap.set("n", "-", "<C-x>")
+-- Buffer Navigation
+keymap.set("n", "<Tab>", ":BufferLineCycleNext<CR>", opts)
+keymap.set("n", "<S-Tab>", ":BufferLineCyclePrev<CR>", opts)
 
-vim.api.nvim_set_keymap(
-  "n",
-  "<leader>cv",
-  '<cmd>lua vim.diagnostic.open_float(nil, { focusable = false, scope = "line" })<CR>',
-  { noremap = true, silent = true }
-)
+-- Window Management
+keymap.set("n", "ss", ":split<CR>", opts)
+keymap.set("n", "sv", ":vsplit<CR>", opts)
+keymap.set("n", "sh", "<C-w>h", opts)
+keymap.set("n", "sj", "<C-w>j", opts)
+keymap.set("n", "sk", "<C-w>k", opts)
+keymap.set("n", "sl", "<C-w>l", opts)
 
--- Delete a word backwards
-keymap.set("n", "dw", 'vb"_d')
+-- Resize Window
+keymap.set("n", "<C-w><left>", "<C-w><", opts)
+keymap.set("n", "<C-w><right>", "<C-w>>", opts)
+keymap.set("n", "<C-w><up>", "<C-w>+", opts)
+keymap.set("n", "<C-w><down>", "<C-w>-", opts)
 
---[[ vim.keymap.set("n", "<leader>t", function()
-  vim.cmd("cd %:p:h")
-  vim.cmd("terminal")
-end, { noremap = true, desc = "Open terminal in current file directory" })
-]]
+-- Quick Save
+keymap.set("n", "<C-s>", ":w<CR>", opts)
 
-local copilot_enabled = true
+-- Toggle Terminal
+keymap.set("n", "<leader>t", "<cmd>ToggleTerm<CR>", opts)
 
-function ToggleCopilot()
-  copilot_enabled = not copilot_enabled
-  if copilot_enabled then
-    vim.cmd([[Copilot enable]])
-  else
-    vim.cmd([[Copilot disable]])
-  end
+-- Telescope Keybindings
+keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<CR>", opts)
+keymap.set("n", "<leader>fg", "<cmd>Telescope live_grep<CR>", opts)
+keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<CR>", opts)
+keymap.set("n", "<leader>fh", "<cmd>Telescope help_tags<CR>", opts)
+keymap.set("n", "sf", "<cmd>Telescope file_browser<CR>", opts)
+
+-- Harpoon Keybindings
+keymap.set("n", "<leader>hm", "<cmd>lua require('harpoon.mark').add_file()<cr>", opts)
+keymap.set("n", "<leader>ht", "<cmd>lua require('harpoon.ui').toggle_quick_menu()<cr>", opts)
+-- Harpoon Navigation Keybindings (1-7)
+for i = 1, 7 do
+  keymap.set("n", "<leader>h" .. i, "<cmd>lua require('harpoon.ui').nav_file(" .. i .. ")<cr>", opts)
 end
 
-vim.api.nvim_set_keymap("n", "<leader>cp", "<cmd>lua ToggleCopilot()<CR>", { noremap = true, silent = true })
+-- Undotree Keybinding
+keymap.set("n", "<Leader>utt", "<cmd>UndotreeToggle<CR>", opts)
 
-vim.keymap.set("n", "<leader>t", function()
-  if terminal_buffer ~= nil and vim.fn.bufexists(terminal_buffer) == 1 then
-    if vim.fn.bufwinnr(terminal_buffer) ~= -1 then
-      vim.cmd("hide")
-    else
-      vim.cmd("botright sbuffer " .. terminal_buffer)
-    end
-  else
-    vim.cmd("cd %:p:h") -- Change directory to the current file's directory
-    vim.cmd("botright split | terminal")
-    terminal_buffer = vim.fn.bufnr("%")
-  end
-end, { noremap = true, desc = "Toggle terminal in a split in the current file directory" })
+-- Fugitive Keybindings
+keymap.set("n", "<leader>gs", ":Gstatus<CR>", opts)
+keymap.set("n", "<leader>gc", ":Git commit<CR>", opts)
 
--- Select all
-keymap.set("n", "<C-a>", "gg<S-v>G")
+-- Increment/Decrement
+keymap.set("n", "+", "<C-a>", opts)
+keymap.set("n", "-", "<C-x>", opts)
 
--- Save with root permission (not working for now)
---vim.api.nvim_create_user_command('W', 'w !sudo tee > /dev/null %', {})
+-- Delete a word backwards
+keymap.set("n", "dw", 'vb"_d', opts)
+
+-- Select All
+keymap.set("n", "<C-a>", "gg<S-v>G", opts)
 
 -- Disable continuations
 keymap.set("n", "<Leader>o", "o<Esc>^Da", opts)
 keymap.set("n", "<Leader>O", "O<Esc>^Da", opts)
 
--- Jumplist
+-- Jumplist Navigation
 keymap.set("n", "<C-m>", "<C-i>", opts)
 
--- New tab
-keymap.set("n", "te", ":tabedit")
-keymap.set("n", "<tab>", ":tabnext<Return>", opts)
-keymap.set("n", "<s-tab>", ":tabprev<Return>", opts)
--- Split window
-keymap.set("n", "ss", ":split<Return>", opts)
-keymap.set("n", "sv", ":vsplit<Return>", opts)
--- Move window
-keymap.set("n", "sh", "<C-w>h")
-keymap.set("n", "sk", "<C-w>k")
-keymap.set("n", "sj", "<C-w>j")
-keymap.set("n", "sl", "<C-w>l")
-
--- Resize window
-keymap.set("n", "<C-w><left>", "<C-w><")
-keymap.set("n", "<C-w><right>", "<C-w>>")
-keymap.set("n", "<C-w><up>", "<C-w>+")
-keymap.set("n", "<C-w><down>", "<C-w>-")
+-- New Tab
+keymap.set("n", "te", ":tabedit<CR>", opts)
+keymap.set("n", "<tab>", ":tabnext<CR>", opts)
+keymap.set("n", "<s-tab>", ":tabprev<CR>", opts)
