@@ -1,162 +1,210 @@
--- since this is just an example spec, don't actually load anything here and return an empty spec
--- stylua: ignore
-if true then return {} end
-
--- every spec file under the "plugins" directory will be loaded automatically by lazy.nvim
---
--- In your plugin files, you can:
--- * add extra plugins
--- * d/enabled LazyVim plugins
--- * override the configuration of LazyVim plugins
 return {
-  -- add gruvbox
-  { "ellisonleao/gruvbox.nvim" },
+  -- Import LazyVim and its default plugins
+  { "LazyVim/LazyVim", import = "lazyvim.plugins" },
 
-  -- Configure LazyVim to load gruvbox
+  -- Git Integration: vim-fugitive
   {
-    "LazyVim/LazyVim",
-    opts = {
-      colorscheme = "gruvbox",
-    },
-  },
-
-  {
-    "akinsho/bufferline.nvim",
-    event = "VeryLazy",
+    "tpope/vim-fugitive",
+    cmd = { "G", "Git", "Gdiffsplit", "Gread", "Gwrite", "Ggrep", "GMove", "GDelete", "GBrowse", "Gstatus", "Gblame" },
     keys = {
-      { "<Tab>", "<Cmd>BufferLineCycleNext<CR>", desc = "Next tab" },
-      { "<S-Tab>", "<Cmd>BufferLineCyclePrev<CR>", desc = "Prev tab" },
+      { "n", "<Leader>gs", ":Gstatus<CR>", desc = "Git Status" },
+      { "n", "<Leader>gc", ":Git commit<CR>", desc = "Git Commit" },
+      -- Add more keybindings as desired
     },
-    opts = {
-      options = {
-        mode = "tabs",
-        show_buffer_close_icons = false,
-        show_close_icon = false,
-      },
-    },
-  },
-
-  -- Incremental rename
-  {
-    "smjonas/inc-rename.nvim",
-    cmd = "IncRename",
-    config = true,
-  },
-
-  {
-    "b0o/incline.nvim",
-    dependencies = { "craftzdog/solarized-osaka.nvim" },
-    event = "BufReadPre",
-    priority = 1200,
     config = function()
-      local colors = require("solarized-osaka.colors").setup()
-      require("incline").setup({
-        highlight = {
-          groups = {
-            InclineNormal = { guibg = colors.magenta500, guifg = colors.base04 },
-            InclineNormalNC = { guifg = colors.violet500, guibg = colors.base03 },
-          },
-        },
-        window = { margin = { vertical = 0, horizontal = 1 } },
-        hide = {
-          cursorline = true,
-        },
-        render = function(props)
-          local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ":t")
-          if vim.bo[props.buf].modified then
-            filename = "[+] " .. filename
-          end
+      -- Optional: Add any plugin-specific configurations here
+    end,
+    lazy = true, -- Load on demand
+  },
 
-          local icon, color = require("nvim-web-devicons").get_icon_color(filename)
-          return { { icon, guifg = color }, { " " }, { filename } }
-        end,
+  -- File Navigation: Harpoon
+  {
+    "ThePrimeagen/harpoon",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      require("harpoon").setup({
+        -- Harpoon-specific configurations
       })
     end,
-  },
-
-  -- change trouble config
-  {
-    "folke/trouble.nvim",
-    -- opts will be merged with the parent spec
-    opts = { use_diagnostic_signs = true },
-  },
-
-  -- disable trouble
-  { "folke/trouble.nvim", enabled = false },
-
-  -- add symbols-outline
-  {
-    "simrat39/symbols-outline.nvim",
-    cmd = "SymbolsOutline",
-    keys = { { "<leader>cs", "<cmd>SymbolsOutline<cr>", desc = "Symbols Outline" } },
-    config = true,
-  },
-
-  -- override nvim-cmp and add cmp-emoji
-  {
-    "hrsh7th/nvim-cmp",
-    dependencies = { "hrsh7th/cmp-emoji" },
-    ---@param opts cmp.ConfigSchema
-    opts = function(_, opts)
-      table.insert(opts.sources, { name = "emoji" })
-    end,
-  },
-
-  -- add pyright to lspconfig
-  {
-    "neovim/nvim-lspconfig",
-    ---@class PluginLspOpts
-    opts = {
-      ---@type lspconfig.options
-      servers = {
-        -- pyright will be automatically installed with mason and loaded with lspconfig
-        pyright = {},
-      },
+    keys = {
+      { "<leader>hm", "<cmd>lua require('harpoon.mark').add_file()<cr>", desc = "Mark file with Harpoon" },
+      { "<leader>ht", "<cmd>lua require('harpoon.ui').toggle_quick_menu()<cr>", desc = "Toggle Harpoon menu" },
+      -- Add keybindings for navigating to harpoon marks
+      { "<leader>h1", "<cmd>lua require('harpoon.ui').nav_file(1)<cr>", desc = "Go to Harpoon mark 1" },
+      { "<leader>h2", "<cmd>lua require('harpoon.ui').nav_file(2)<cr>", desc = "Go to Harpoon mark 2" },
+      { "<leader>h3", "<cmd>lua require('harpoon.ui').nav_file(3)<cr>", desc = "Go to Harpoon mark 3" },
+      { "<leader>h4", "<cmd>lua require('harpoon.ui').nav_file(4)<cr>", desc = "Go to Harpoon mark 4" },
+      -- Continue up to 7 if needed
     },
+    lazy = true, -- Load when keybindings are used
   },
 
-  -- add tsserver and setup with typescript.nvim instead of lspconfig
+  -- Fuzzy Finding: Telescope
   {
-    "neovim/nvim-lspconfig",
+    "nvim-telescope/telescope.nvim",
     dependencies = {
-      "jose-elias-alvarez/typescript.nvim",
-      init = function()
-        require("lazyvim.util").on_attach(function(_, buffer)
-          -- stylua: ignore
-          vim.keymap.set( "n", "<leader>co", "TypescriptOrganizeImports", { buffer = buffer, desc = "Organize Imports" })
-          vim.keymap.set("n", "<leader>cR", "TypescriptRenameFile", { desc = "Rename File", buffer = buffer })
-        end)
-      end,
+      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+      "nvim-telescope/telescope-file-browser.nvim",
     },
-    ---@class PluginLspOpts
-    opts = {
-      ---@type lspconfig.options
-      servers = {
-        -- tsserver will be automatically installed with mason and loaded with lspconfig
-        tsserver = {},
-      },
-      -- you can do any additional lsp server setup here
-      -- return true if you don't want this server to be setup with lspconfig
-      ---@type table<string, fun(server:string, opts:_.lspconfig.options):boolean?>
-      setup = {
-        -- example to setup with typescript.nvim
-        tsserver = function(_, opts)
-          require("typescript").setup({ server = opts })
-          return true
+    keys = {
+      {
+        "<leader>fP",
+        function()
+          require("telescope.builtin").find_files({
+            cwd = require("lazy.core.config").options.root,
+          })
         end,
-        -- Specify * to use this function as a fallback for any server
-        -- ["*"] = function(server, opts) end,
+        desc = "Find Plugin File",
       },
+      {
+        ";f",
+        function()
+          require("telescope.builtin").find_files({
+            no_ignore = false,
+            hidden = true,
+          })
+        end,
+        desc = "Find Files",
+      },
+      {
+        ";r",
+        function()
+          require("telescope.builtin").live_grep()
+        end,
+        desc = "Live Grep",
+      },
+      {
+        "\\\\",
+        function()
+          require("telescope.builtin").buffers()
+        end,
+        desc = "List Buffers",
+      },
+      {
+        ";t",
+        function()
+          require("telescope.builtin").help_tags()
+        end,
+        desc = "Help Tags",
+      },
+      {
+        "sf",
+        function()
+          require("telescope").extensions.file_browser.file_browser({
+            path = "%:p:h",
+            cwd = require("lazy.core.config").options.root,
+            respect_gitignore = false,
+            hidden = true,
+            grouped = true,
+            previewer = false,
+            initial_mode = "normal",
+            layout_config = { height = 40 },
+          })
+        end,
+        desc = "Open File Browser",
+      },
+      -- Add more keybindings as needed
     },
+    config = function()
+      local telescope = require("telescope")
+      local actions = require("telescope.actions")
+      local fb_actions = require("telescope").extensions.file_browser.actions
+
+      telescope.setup({
+        defaults = {
+          wrap_results = true,
+          layout_strategy = "horizontal",
+          layout_config = { prompt_position = "top" },
+          sorting_strategy = "ascending",
+          winblend = 0,
+          mappings = {
+            n = {},
+          },
+        },
+        pickers = {
+          diagnostics = {
+            theme = "ivy",
+            initial_mode = "normal",
+            layout_config = {
+              preview_cutoff = 9999,
+            },
+          },
+        },
+        extensions = {
+          file_browser = {
+            theme = "dropdown",
+            hijack_netrw = true,
+            mappings = {
+              n = {
+                ["N"] = fb_actions.create,
+                ["h"] = fb_actions.goto_parent_dir,
+                ["/"] = function()
+                  vim.cmd("startinsert")
+                end,
+                ["<C-u>"] = function(prompt_bufnr)
+                  for _ = 1, 10 do
+                    actions.move_selection_previous(prompt_bufnr)
+                  end
+                end,
+                ["<C-d>"] = function(prompt_bufnr)
+                  for _ = 1, 10 do
+                    actions.move_selection_next(prompt_bufnr)
+                  end
+                end,
+                ["<PageUp>"] = actions.preview_scrolling_up,
+                ["<PageDown>"] = actions.preview_scrolling_down,
+              },
+            },
+          },
+        },
+      })
+
+      telescope.load_extension("fzf")
+      telescope.load_extension("file_browser")
+    end,
+    lazy = true, -- Load when keybindings are used
   },
 
-  -- for typescript, LazyVim also includes extra specs to properly setup lspconfig,
-  -- treesitter, mason and typescript.nvim. So instead of the above, you can use:
-  { import = "lazyvim.plugins.extras.lang.typescript" },
+  -- Undo History Visualization: Undotree
+  {
+    "mbbill/undotree",
+    cmd = "UndotreeToggle",
+    config = function()
+      vim.g.undotree_WindowLayout = 2
+      vim.g.undotree_SetFocusWhenToggle = 1
+      -- Add more plugin-specific configurations here if needed
+    end,
+    lazy = true, -- Load on demand
+  },
 
-  -- add more treesitter parsers
+  -- Status Line: lualine.nvim
+  {
+    "nvim-lualine/lualine.nvim",
+    event = "VeryLazy",
+    opts = function()
+      return {
+        options = {
+          theme = "tokyonight",
+          section_separators = { left = "", right = "" },
+          component_separators = { left = "", right = "" },
+        },
+        sections = {
+          lualine_a = { "mode" },
+          lualine_b = { "branch" },
+          lualine_c = { "filename" },
+          lualine_x = { "encoding", "fileformat", "filetype" },
+          lualine_y = { "progress" },
+          lualine_z = { "location" },
+        },
+      }
+    end,
+    lazy = true,
+  },
+
+  -- Syntax Highlighting: nvim-treesitter
   {
     "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
     opts = {
       ensure_installed = {
         "bash",
@@ -170,129 +218,157 @@ return {
         "query",
         "regex",
         "tsx",
-        "typescript",
         "vim",
         "yaml",
       },
+      highlight = { enable = true },
+      indent = { enable = true },
     },
+    event = "BufRead",
+    lazy = true,
   },
 
-  -- since `vim.tbl_deep_extend`, can only merge tables and not lists, the code above
-  -- would overwrite `ensure_installed` with the new value.
-  -- If you'd rather extend the default config, use the code below instead:
-  {
-    "nvim-treesitter/nvim-treesitter",
-    opts = function(_, opts)
-      -- add tsx and treesitter
-      vim.list_extend(opts.ensure_installed, {
-        "tsx",
-        "typescript",
-      })
-    end,
-  },
-
-  {
-    "ThePrimeagen/harpoon",
-    lazy = false,
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-    },
-    config = true,
-    keys = {
-      { "<leader>hm", "<cmd>lua require('harpoon.mark').add_file()<cr>", desc = "Mark file with harpoon" },
-      { "<leader>hn", "<cmd>lua require('harpoon.ui').nav_next()<cr>", desc = "Go to next harpoon mark" },
-      { "<leader>hp", "<cmd>lua require('harpoon.ui').nav_prev()<cr>", desc = "Go to previous harpoon mark" },
-      { "<leader>ha", "<cmd>lua require('harpoon.ui').toggle_quick_menu()<cr>", desc = "Show harpoon marks" },
-    },
-  },
-  -- the opts function can also be used to change the default opts:
-  {
-    "nvim-lualine/lualine.nvim",
-    event = "VeryLazy",
-    opts = function(_, opts)
-      table.insert(opts.sections.lualine_x, "😄")
-    end,
-  },
-
-  -- or you can return new options to override all the defaults
-  {
-    "nvim-lualine/lualine.nvim",
-    event = "VeryLazy",
-    opts = function()
-      return {
-        --[[add your custom lualine config here]]
-      }
-    end,
-  },
-
-  -- use mini.starter instead of alpha
-  { import = "lazyvim.plugins.extras.ui.mini-starter" },
-
-  -- add jsonls and schemastore packages, and setup treesitter for json, json5 and jsonc
-  { import = "lazyvim.plugins.extras.lang.json" },
-
-  -- add any tools you want to have installed below
-  {
-    "williamboman/mason.nvim",
-    opts = {
-      ensure_installed = {
-        "stylua",
-        "shellcheck",
-        "shfmt",
-        "flake8",
-      },
-    },
-  },
-
-  -- Use <tab> for completion and snippets (supertab)
-  -- first: disable default <tab> and <s-tab> behavior in LuaSnip
-  {
-    "L3MON4D3/LuaSnip",
-    keys = function()
-      return {}
-    end,
-  },
-  -- then: setup supertab in cmp
+  -- Autocompletion: nvim-cmp
   {
     "hrsh7th/nvim-cmp",
     dependencies = {
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-emoji",
+      "L3MON4D3/LuaSnip",
+      "saadparwaiz1/cmp_luasnip",
     },
-    ---@param opts cmp.ConfigSchema
-    opts = function(_, opts)
-      local has_words_before = function()
-        unpack = unpack or table.unpack
-        local line, col = unpack(vim.api.nvim_win_get_cursor(0))
-        return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
-      end
-
-      local luasnip = require("luasnip")
+    config = function()
       local cmp = require("cmp")
+      local luasnip = require("luasnip")
 
-      opts.mapping = vim.tbl_extend("force", opts.mapping, {
-        ["<Tab>"] = cmp.mapping(function(fallback)
-          if cmp.visible() then
-            cmp.select_next_item()
-            -- You could replace the expand_or_jumpable() calls with expand_or_locally_jumpable()
-            -- this way you will only jump inside the snippet region
-          elseif luasnip.expand_or_jumpable() then
-            luasnip.expand_or_jump()
-          elseif has_words_before() then
-            cmp.complete()
-          else
-            fallback()
-          end
-        end, { "i", "s" }),
-        ["<S-Tab>"] = cmp.mapping(function(fallback)
-          if cmp.visible() then
-            cmp.select_prev_item()
-          elseif luasnip.jumpable(-1) then
-            luasnip.jump(-1)
-          else
-            fallback()
-          end
-        end, { "i", "s" }),
+      cmp.setup({
+        snippet = {
+          expand = function(args)
+            luasnip.lsp_expand(args.body)
+          end,
+        },
+        mapping = cmp.mapping.preset.insert({
+          ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+          ["<C-f>"] = cmp.mapping.scroll_docs(4),
+          ["<C-Space>"] = cmp.mapping.complete(),
+          ["<C-e>"] = cmp.mapping.abort(),
+          ["<CR>"] = cmp.mapping.confirm({ select = true }),
+          ["<Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_next_item()
+            elseif luasnip.expand_or_jumpable() then
+              luasnip.expand_or_jump()
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+          ["<S-Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item()
+            elseif luasnip.jumpable(-1) then
+              luasnip.jump(-1)
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+        }),
+        sources = cmp.config.sources({
+          { name = "nvim_lsp" },
+          { name = "luasnip" },
+          { name = "buffer" },
+          { name = "path" },
+          { name = "emoji" },
+        }),
       })
     end,
+    lazy = true,
   },
+
+  -- LSP Configuration: nvim-lspconfig
+  {
+    "neovim/nvim-lspconfig",
+    dependencies = {
+      "williamboman/mason.nvim",
+      "williamboman/mason-lspconfig.nvim",
+    },
+    config = function()
+      require("mason").setup()
+      require("mason-lspconfig").setup({
+        ensure_installed = { "pyright", "lua_ls" },
+      })
+
+      local lspconfig = require("lspconfig")
+      local servers = { "pyright", "lua_ls" }
+
+      for _, server in ipairs(servers) do
+        lspconfig[server].setup({})
+      end
+    end,
+    lazy = true,
+  },
+
+  -- Color Scheme: tokyonight.nvim
+  {
+    "folke/tokyonight.nvim",
+    config = function()
+      vim.cmd([[colorscheme tokyonight]])
+    end,
+    lazy = false, -- Load immediately
+  },
+
+  -- Toggle Terminal: ToggleTerm.nvim
+  {
+    "akinsho/toggleterm.nvim",
+    version = "*",
+    config = function()
+      require("toggleterm").setup({
+        open_mapping = [[<leader>t]],
+        direction = "float",
+        shade_terminals = true,
+        float_opts = {
+          border = "curved",
+          winblend = 3,
+        },
+      })
+    end,
+    lazy = true,
+  },
+
+  -- GitHub Copilot Integration
+  {
+    "github/copilot.vim",
+    cmd = "Copilot",
+    keys = {
+      { "<leader>cp", "<cmd>lua ToggleCopilot()<CR>", desc = "Toggle Copilot" },
+    },
+    config = function()
+      vim.g.copilot_no_tab_map = true -- Disable default <Tab> mapping
+      -- Any other Copilot configurations
+    end,
+    lazy = true,
+  },
+
+  -- File Explorer: nvim-tree (if you still prefer it)
+  -- If you don't want nvim-tree, you can skip this
+  -- {
+  --   "kyazdani42/nvim-tree.lua",
+  --   dependencies = { "kyazdani42/nvim-web-devicons" },
+  --   keys = {
+  --     { "<leader>e", ":NvimTreeToggle<CR>", desc = "Toggle File Explorer" },
+  --   },
+  --   config = function()
+  --     require("nvim-tree").setup({
+  --       -- nvim-tree configurations
+  --       disable_netrw = true,
+  --       hijack_netrw = true,
+  --       view = {
+  --         width = 30,
+  --         side = "left",
+  --       },
+  --     })
+  --   end,
+  --   lazy = true,
+  -- },
 }
