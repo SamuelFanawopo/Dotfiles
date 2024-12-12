@@ -217,6 +217,7 @@ return {
         "python",
         "query",
         "regex",
+        "typescript",
         "tsx",
         "vim",
         "yaml",
@@ -296,11 +297,47 @@ return {
     config = function()
       require("mason").setup()
       require("mason-lspconfig").setup({
-        ensure_installed = { "pyright", "lua_ls" },
+        ensure_installed = {
+          "html",
+          "golangci_lint_ls",
+          "dockerls",
+          "lua_ls",
+          "eslint",
+          "tailwindcss",
+          "yamlls",
+          "bashls",
+          "taplo",
+          "gopls",
+          "jsonls",
+          "cssmodules_ls",
+          "pyright",
+          "jdtls",
+          "cssls",
+          "ts_ls",
+          "graphql",
+        },
       })
 
       local lspconfig = require("lspconfig")
-      local servers = { "pyright", "lua_ls" }
+      local servers = {
+        "html",
+        "golangci_lint_ls",
+        "dockerls",
+        "lua_ls",
+        "eslint",
+        "tailwindcss",
+        "yamlls",
+        "bashls",
+        "taplo",
+        "gopls",
+        "jsonls",
+        "cssmodules_ls",
+        "pyright",
+        "jdtls",
+        "cssls",
+        "ts_ls",
+        "graphql",
+      }
 
       for _, server in ipairs(servers) do
         lspconfig[server].setup({})
